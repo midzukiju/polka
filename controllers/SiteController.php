@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\AddBookForm;
+use app\models\Book;
 use app\models\ContactForm;
 use app\models\Genre;
 use app\models\LoginForm;
@@ -15,6 +16,7 @@ use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 
@@ -63,7 +65,9 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+        $books = Book::find()->all();
+        // var_dump($books);
+        return $this->render('index', [ 'books' => $books ]);
     }
 
     public function actionAuth($tab = 'login')
@@ -166,7 +170,8 @@ class SiteController extends Controller
     {
         $userBook = UserBook::find()
             ->with(['book.genre', 'status'])
-            ->where(['user_id' => Yii::$app->user->id, 'book_id' => (int)$id])
+            // ->where(['user_id' => Yii::$app->user->id, 'book_id' => (int)$id])
+            ->where(['book_id' => (int)$id])
             ->one();
         if ($userBook === null) {
             throw new NotFoundHttpException('Книга не найдена.');
@@ -178,7 +183,10 @@ class SiteController extends Controller
     {
         $userBook = $this->findUserBook($id);
         $notes = Note::find()
-            ->where(['user_id' => Yii::$app->user->id, 'book_id' => $userBook->book_id])
+
+        ->where(['user_id' => Yii::$app->user->id, 'book_id' => $userBook->book_id])
+
+            // ->where(['book_id' => $userBook->book_id])
             ->orderBy(['created_at' => SORT_DESC, 'id' => SORT_DESC])
             ->all();
 
